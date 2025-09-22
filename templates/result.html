@@ -1,23 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🌱 Crop Recommendation Result</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
-    <div class="container">
-        <h1>🌾 Recommended Crops</h1>
-        <div class="result">
-            <ul>
-                {% for crop in crops %}
-                <li>{{ crop }}</li>
-                {% endfor %}
+    <div class="page-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-leaf"></i> <span data-key="title">KrishiMitra</span></h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}"><i class="fa-solid fa-table-columns"></i> 
+                    <span data-key="dashboard">Dashboard</span></a></li>
+                <li><a href="{{ url_for('crop_recommendation_page') }}" class="active">
+                    <i class="fa-solid fa-seedling"></i> 
+                    <span data-key="crop_recommendation">Crop Recommendation</span></a></li>
+                
             </ul>
-        </div>
-        <button onclick="window.location.href='/'">🔙 Go Back</button>
+        </nav>
+
+        <main class="content">
+            <header class="main-header">
+                <h1>Your Detailed Agricultural Report</h1>
+                <div class="language-selector">
+                    <label for="language-switcher">
+                        <i class="fa-solid fa-language"></i>
+                        <span>Language:</span>
+                    </label>
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="te">Telugu</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="results-container">
+                <div class="card">
+                    <div class="gemini-report">
+                        {% if gemini_report %}
+                            <!-- Show Gemini’s detailed report -->
+                            {{ gemini_report | safe }}
+                        {% else %}
+                            {% if crops %}
+                                <h3>Recommended Crops:</h3>
+                                <ul>
+                                    {% for crop in crops %}
+                                        <li>{{ crop }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No crop recommendations available.</p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <a href="{{ url_for('crop_recommendation_page') }}" class="action-button go-back-button">
+                        <i class="fa-solid fa-arrow-left"></i> Get a New Recommendation
+                    </a>
+                </div>
+            </div>
+        </main>
     </div>
 </body>
+
 
 </html>
