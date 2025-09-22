@@ -7,169 +7,88 @@
     <title>AI Crop Recommendation</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 
-        .container {
-            background-color: #ffffff;
-            padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 600px;
-        }
-
-        h1 {
-            color: #2c3e50;
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #555;
-        }
-
-        input[type="number"],
-        input[type="text"] {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-sizing: border-box;
-            transition: border-color 0.3s;
-        }
-
-        input[type="text"][readonly] {
-            background-color: #e9ecef;
-            cursor: not-allowed;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: #007bff;
-        }
-
-        button {
-            width: 100%;
-            padding: 0.85rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.1s;
-        }
-
-        button[type="submit"] {
-            background-color: #28a745;
-            color: white;
-            margin-top: 1rem;
-        }
-
-        button[type="submit"]:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-
-        #get-location {
-            background-color: #007bff;
-            color: white;
-            margin-top: 0.5rem;
-        }
-
-        #get-location:hover {
-            background-color: #0069d9;
-            transform: translateY(-2px);
-        }
-
-        #result-container {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #eee;
-        }
-
-        #result-container h3 {
-            color: #2c3e50;
-        }
-
-        #json-output {
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 1rem;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: monospace;
-            min-height: 50px;
-        }
-
-        .loader {
-            text-align: center;
-            font-style: italic;
-            color: #555;
-        }
-
-        .error {
-            color: #d9534f;
-            font-weight: bold;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 
 <body>
-    <div class="container">
-        <h1>Enter Crop Details</h1>
-        <form id="text-form">
-            <div class="form-group">
-                <label for="land-area">Land Area (in acres):</label>
-                <input type="number" id="land-area" required>
+    <div class="page-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-leaf"></i> <span data-key="title">KrishiMitra</span></h2>
             </div>
-            <div class="form-group">
-                <label for="prev-crop">Previous Crop:</label>
-                <input type="text" id="prev-crop" required>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}"><i class="fa-solid fa-table-columns"></i> <span
+                            data-key="dashboard">Dashboard</span></a></li>
+                <li><a href="{{ url_for('crop_recommendation_page') }}" class="active"><i
+                            class="fa-solid fa-seedling"></i> <span data-key="crop_recommendation">Crop
+                            Recommendation</span></a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <header class="main-header">
+                <h1 data-key="crop_recommendation">Crop Recommendation</h1>
+                <div class="language-selector">
+                    <label for="language-switcher">
+                        <i class="fa-solid fa-language"></i>
+                        <span>Language:</span>
+                    </label>
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="te">Telugu</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="form-container">
+                <div class="card">
+                    <h2>Enter Crop Details</h2>
+                    <form id="text-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="land-area">Land Area (in acres):</label>
+                                <input type="number" id="land-area" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="prev-crop">Previous Crop:</label>
+                                <input type="text" id="prev-crop" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="latitude">Latitude:</label>
+                                <input type="number" step="any" id="latitude" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="longitude">Longitude:</label>
+                                <input type="number" step="any" id="longitude" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="state">State:</label>
+                                <input type="text" id="state" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="district">District:</label>
+                                <input type="text" id="district" readonly>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" id="get-location" class="secondary-button"><i
+                                    class="fa-solid fa-location-crosshairs"></i> Use My GPS Location</button>
+                            <button type="submit" class="action-button">Get Recommendation</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card" id="result-container">
+                    <h3>Model Recommendation</h3>
+                    <pre id="json-output">Results will be displayed here...</pre>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="latitude">Latitude:</label>
-                <input type="number" step="any" id="latitude" required>
-            </div>
-            <div class="form-group">
-                <label for="longitude">Longitude:</label>
-                <input type="number" step="any" id="longitude" required>
-            </div>
-            <div class="form-group">
-                <label for="state">State:</label>
-                <input type="text" id="state" readonly>
-            </div>
-            <div class="form-group">
-                <label for="district">District:</label>
-                <input type="text" id="district" readonly>
-            </div>
-            <button type="button" id="get-location">Use My GPS Location</button>
-            <button type="submit">Get Recommendation</button>
-        </form>
-        <div id="result-container">
-            <h3>Model Recommendation</h3>
-            <pre id="json-output">Results will be displayed here...</pre>
-        </div>
+        </main>
     </div>
 
     <script>
@@ -184,22 +103,15 @@
         // Reverse geocoding
         const fetchAddress = (lat, long) => {
             const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`;
-            console.log("Fetching address from API:", apiUrl);
-
             fetch(apiUrl)
                 .then(response => response.json())
                 .then(data => {
-                    console.log("API Response:", data);
                     if (data.address) {
                         const state = data.address.state || 'N/A';
                         const district = data.address.state_district || data.address.county || data.address.city_district || 'N/A';
-
                         stateInput.value = state;
                         districtInput.value = district;
-
-                        console.log(`Parsed State: ${state}, District: ${district}`);
                     } else {
-                        console.warn('No address found in API response');
                         alert('Could not retrieve address details for this location.');
                     }
                 })
@@ -211,30 +123,20 @@
 
         // Get GPS location
         getLocationBtn.addEventListener('click', () => {
-            console.log("Use My GPS Location button clicked");
-
             if (navigator.geolocation) {
-                console.log("Geolocation supported");
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const lat = position.coords.latitude;
                         const long = position.coords.longitude;
-
                         latInput.value = lat.toFixed(6);
                         longInput.value = long.toFixed(6);
-
-                        console.log("User location obtained:", lat, long);
-                        alert(`Your location: ${lat.toFixed(6)}, ${long.toFixed(6)}`);
-
                         fetchAddress(lat, long);
                     },
                     (error) => {
-                        console.error("Geolocation error:", error);
                         alert('Could not get your location. Please enter it manually.');
                     }
                 );
             } else {
-                console.warn("Geolocation not supported");
                 alert('Geolocation is not supported by your browser.');
             }
         });
@@ -242,7 +144,6 @@
         // Form submission
         form.addEventListener('submit', (event) => {
             event.preventDefault();
-
             const district = districtInput.value;
             if (!district || district === 'N/A') {
                 jsonOutput.textContent = 'District information is required. Please use the GPS button or enter location manually.';
@@ -250,49 +151,28 @@
                 return;
             }
             jsonOutput.classList.remove('error');
-
-            jsonOutput.innerHTML = `<div class="loader">Fetching recommendations for ${district}...</div>`;
-            console.log("Sending district to backend:", district);
+            jsonOutput.innerHTML = `<div class="loader">Fetching recommendations...</div>`;
 
             fetch('/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ district: district }),
+                body: JSON.stringify({ district: district , crop: document.getElementById('prev-crop').value, area: document.getElementById('land-area').value}),
             })
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Server Response:', data);
-
                     if (data.error) {
                         jsonOutput.textContent = `Error: ${data.error}`;
                         jsonOutput.classList.add('error');
                     } else if (data.status === 'success') {
-                        let recommendationsHtml = '<strong>Top Crop Recommendations:</strong>\n<ul>';
-                        data.recommended_crops.forEach(rec => {
-                            recommendationsHtml += `<li>${rec.crop} (Confidence: ${rec.probability})</li>`;
-                        });
-                        recommendationsHtml += '</ul>\n';
-
-                        let featuresHtml = '<strong>Based on Environmental Factors:</strong>\n';
-                        const f = data.input_features;
-                        featuresHtml += `  - Nitrogen (N): ${f.N.toFixed(2)}\n`;
-                        featuresHtml += `  - Phosphorus (P): ${f.P.toFixed(2)}\n`;
-                        featuresHtml += `  - Potassium (K): ${f.K.toFixed(2)}\n`;
-                        featuresHtml += `  - Soil pH: ${f.ph.toFixed(2)}\n`;
-                        featuresHtml += `  - Temperature: ${f.temperature_C.toFixed(1)} °C\n`;
-                        featuresHtml += `  - Humidity: ${f.humidity_percent.toFixed(0)}%\n`;
-                        featuresHtml += `  - Rainfall (last hour): ${f.rainfall_mm_last_hr} mm`;
-
-                        jsonOutput.textContent = recommendationsHtml + featuresHtml;
+                        // Redirect to result.html page
+                        window.location.href = data.redirect_url;
                     }
                 })
                 .catch(error => {
-                    console.error('Fetch Error:', error);
-                    jsonOutput.textContent = 'Failed to connect to the prediction server. Please ensure the server is running and accessible.';
+                    jsonOutput.textContent = 'Failed to connect to the server.';
                     jsonOutput.classList.add('error');
                 });
         });
-
     </script>
 </body>
 
