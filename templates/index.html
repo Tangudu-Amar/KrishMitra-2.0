@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KrishiMitra Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="page-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-leaf"></i> <span data-key="title">KrishiMitra</span></h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}" class="active"><i class="fa-solid fa-table-columns"></i> <span
+                            data-key="dashboard">Dashboard</span></a></li>
+                <li><a href="{{ url_for('crop_recommendation_page') }}"><i class="fa-solid fa-seedling"></i> <span
+                            data-key="crop_recommendation">Crop Recommendation</span></a></li>
+
+                <li><a href="#"><i class="fa-solid fa-arrow-trend-up"></i> <span data-key="market_prices">Market
+                            Prices</span></a></li>
+                <li><a href="#"><i class="fa-solid fa-users"></i> <span data-key="community_forum">Community
+                            Forum</span></a></li>
+            </ul>
+            <ul class="sidebar-bottom">
+                <li><a href="#"><i class="fa-solid fa-gear"></i> <span data-key="settings">Settings</span></a></li>
+                <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> <span data-key="logout">Log
+                            Out</span></a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <header class="main-header">
+                <h1 data-key="dashboard">Dashboard</h1>
+                <div class="language-selector">
+                    <label for="language-switcher">
+                        <i class="fa-solid fa-language"></i>
+                        <span>Language:</span>
+                    </label>
+                    <select id="language-switcher">
+                        <option value="en">English</option>
+                        <option value="hi">Hindi</option>
+                        <option value="te">Telugu</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <div class="card recommendation-card">
+                    <div class="crop-illustration">
+                        <img src="https://cdn.pixabay.com/photo/2020/04/24/09/47/paddy-fields-5086153_1280.jpg"
+                            alt="Paddy field" width="50%" height="auto">
+                    </div>
+                    <h2 data-key="paddy_rice">Paddy (Rice)</h2>
+                    <p class="crop-subtext" data-key="paddy_rice_subtext">This crop is highly recommended based on your
+                        local soil and climate data.</p>
+
+                    <div class="crop-stats-container">
+                        <div class="stat-box">
+                            <span data-key="sowing_season">Sowing Season</span>
+                            <strong data-key="kharif">Kharif</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span data-key="growth_duration">Growth Duration</span>
+                            <strong data-key="120_days">120 Days</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span data-key="expected_yield">Expected Yield</span>
+                            <strong data-key="yield_value">4-5 tons/ha</strong>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('crop_recommendation_page') }}" class="action-button"
+                        data-key="new_recommendation">Get New Recommendation</a>
+                </div>
+
+                <div class="card market-prices-card">
+                    <h3><i class="fa-solid fa-store"></i> <span data-key="market_prices">Market Prices</span></h3>
+                    <ul class="market-list">
+                        <li>
+                            <span class="crop-icon tomato">🍅</span>
+                            <span class="crop-name" data-key="tomato">Tomato</span>
+                            <span class="price">₹25/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 2.5%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon onion">🧅</span>
+                            <span class="crop-name" data-key="onion">Onion</span>
+                            <span class="price">₹30/kg</span>
+                            <span class="trend down"><i class="fa-solid fa-arrow-down"></i> 1.8%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon potato">🥔</span>
+                            <span class="crop-name" data-key="potato">Potato</span>
+                            <span class="price">₹22/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 5.2%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon cotton">🌱</span>
+                            <span class="crop-name" data-key="cotton">Cotton</span>
+                            <span class="price">₹72/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 1.5%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon maize">🌽</span>
+                            <span class="crop-name" data-key="maize">Maize</span>
+                            <span class="price">₹21/kg</span>
+                            <span class="trend down"><i class="fa-solid fa-arrow-down"></i> 0.5%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon wheat">🌾</span>
+                            <span class="crop-name" data-key="wheat">Wheat</span>
+                            <span class="price">₹28/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 3.1%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
