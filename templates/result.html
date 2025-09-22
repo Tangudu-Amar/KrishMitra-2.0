@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>🌱 Crop Recommendation Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+        <h1>🌾 Recommended Crops</h1>
+        <div class="result">
+            <ul>
+                {% for crop in crops %}
+                <li>{{ crop }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <button onclick="window.location.href='/'">🔙 Go Back</button>
+    </div>
+</body>
+
+</html>
