@@ -26,7 +26,7 @@ CROP_LABELS = [
 
 # --- App Initialization ---
 app = Flask(__name__)
-app.secret_key = os.urandom(24) 
+app.secret_key = os.urandom(24)
 CORS(app)
 
 # --- Configure Gemini API ---
@@ -38,7 +38,7 @@ gemini_model = genai.GenerativeModel('models/gemini-2.0-flash')
 # --- Load Data and Model ---
 try:
     model = joblib.load("crop_model.pkl")
-    df = pd.read_excel("Model_Data.xlsx") 
+    df = pd.read_excel("Model_Data.xlsx")
 except FileNotFoundError as e:
     print(f"Error loading data file or model: {e}")
     exit()
@@ -212,7 +212,7 @@ TRANSLATIONS = {
     },
     'recommended_crops': {
         'en': 'Recommended Crops',
-        'hi': 'अनुशंसిత పంటలు',
+        'hi': 'अनुशंसित పంటలు',
         'te': 'సిఫార్సు చేయబడిన పంటలు'
     },
     'detailed_report': {
@@ -277,7 +277,7 @@ def crop_prediction_page():
     if 'lang' not in session:
         session['lang'] = 'en'
     lang = session['lang']
-    
+
     if not gemini_report and not crops:
         return redirect(url_for('crop_recommendation_page'))
     return render_template("result.html", gemini_report=gemini_report, crops=crops, translations=TRANSLATIONS, lang=lang)
@@ -358,24 +358,74 @@ def predict():
 
     # 4. Generate Detailed Report with Gemini API
     prompt = f"""
-    You are KrishiMitra, an agricultural assistant. Based on the following factors:
-    - Nitrogen: {n}, Phosphorus: {p}, Potassium: {k}
-    - Soil pH: {ph}
-    - **10-Day Average Weather**:
-        - Temperature: {avg_temperature:.2f} °C
-        - Humidity: {avg_humidity:.2f}%
-        - Rainfall: {avg_rainfall:.2f} mm
-    - Previous Crop: {prev_crop if prev_crop else 'N/A'}
-    - Land Area: {area if area else 'N/A'}
+    You are an expert AI agronomist named KrishiMitra. Your task is to provide a detailed, well-structured crop recommendation in HTML format based on the data provided below. Your response must be only the HTML code, ready to be rendered directly on a webpage. Do not include <html> or <body> tags.
 
-    Recommend suitable crops from: {', '.join(recommendations)}.
-    Provide explanation in structured format:
-    - give for first recomendation only.
-    - why that crop.
-    - support the recomendation provided.
-    - dont unnecessarily send input data back in reply.
-    Summarize briefly with small points for each heading.
-    (give in the form of html to render directly on frontend dont give html in start and end backticks)
+## Farm & Environmental Data:
+
+Soil Nutrients: Nitrogen (N): {n} ppm, Phosphorus (P): {p} ppm, Potassium (K): {k} ppm
+
+Soil pH: {ph}
+
+10-Day Weather Forecast:
+
+Average Temperature: {avg_temperature:.2f} °C
+
+Average Humidity: {avg_humidity:.2f}%
+
+Total Rainfall: {avg_rainfall:.2f} mm
+
+Farm Details:
+
+Previous Crop Harvested: {prev_crop if prev_crop else 'N/A'}
+
+Land Area: {area if area else 'N/A'} acres
+
+## Pre-selected Viable Crops (from analysis):
+{', '.join(recommendations)}
+
+## Instructions:
+
+From the list of pre-selected crops, choose the single best crop as the primary recommendation.
+
+Provide a detailed justification, research basis, and suggest 2-3 other feasible alternatives from the list.
+
+Format your entire response using the HTML structure provided below. Do not add any text outside of the main <div class="report-container"> wrapper.
+
+HTML
+
+<div class="report-container" style="font-family: Arial, sans-serif; color: #333;">
+
+    <div class="card primary-recommendation" style="background-color: #e8f5e9; border-left: 5px solid #4CAF50; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h2 style="margin-top: 0;">Primary Recommendation: [Name of the Best Crop]</h2>
+        <p>Based on a comprehensive analysis of your soil and local weather, <strong>[Crop Name]</strong> is the most profitable and suitable crop for the upcoming season.</p>
+    </div>
+
+    <div class="card details" style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <h3>Detailed Analysis</h3>
+        <hr>
+        <h4>Justification for Recommendation</h4>
+        <ul>
+            <li><strong>Soil Compatibility:</strong> Your soil's NPK values and pH are within the ideal range required for robust growth of [Crop Name].</li>
+            <li><strong>Climate Suitability:</strong> The current weather forecast aligns perfectly with the critical germination and growing phases for this crop.</li>
+            <li><strong>Crop Rotation Benefit:</strong> Following a previous crop of [{prev_crop if prev_crop else 'N/A'}], planting [Crop Name] can help improve soil health by [mention a specific benefit, e.g., breaking pest cycles, restoring nitrogen, etc.].</li>
+        </ul>
+
+        <h4>Research Basis</h4>
+        <ul>
+            <li>Agricultural studies for your geo-climatic zone show that [Crop Name] has a high yield potential under these specific soil and weather parameters.</li>
+            <li>This crop is recommended for this season due to its [mention a key trait, e.g., drought tolerance, water-use efficiency, etc.], which is supported by regional agricultural university research.</li>
+        </ul>
+    </div>
+
+    <div class="card alternatives" style="background-color: #e3f2fd; padding: 15px; border-radius: 5px;">
+        <h3>Feasible Alternative Crops</h3>
+        <hr>
+        <p><strong>1. [Alternative Crop 1 Name]:</strong> A strong secondary option. It thrives in similar conditions but may have a different market value or water requirement.</p>
+        <p><strong>2. [Alternative Crop 2 Name]:</strong> Consider this crop if you are looking for a shorter harvest cycle or better resistance to local pests.</p>
+    </div>
+
+</div>
+    Respond entirely in the language corresponding to the language code: {lang}.
     """
 
     try:
