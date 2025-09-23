@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Crop Recommendation</title>
+    <title>{{ translations.title[lang] }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,73 +19,71 @@
     <div class="page-container">
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h2><i class="fas fa-leaf"></i> <span data-key="title">KrishiMitra</span></h2>
+                <h2><i class="fas fa-leaf"></i> <span>{{ translations.title[lang] }}</span></h2>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="{{ url_for('home') }}"><i class="fa-solid fa-table-columns"></i> <span
-                            data-key="dashboard">Dashboard</span></a></li>
+                <li><a href="{{ url_for('home') }}"><i class="fa-solid fa-table-columns"></i> <span>{{ translations.dashboard[lang] }}</span></a></li>
                 <li><a href="{{ url_for('crop_recommendation_page') }}" class="active"><i
-                            class="fa-solid fa-seedling"></i> <span data-key="crop_recommendation">Crop
-                            Recommendation</span></a></li>
+                            class="fa-solid fa-seedling"></i> <span>{{ translations.crop_recommendation[lang] }}</span></a></li>
             </ul>
         </nav>
 
         <main class="content">
             <header class="main-header">
-                <h1 data-key="crop_recommendation">Crop Recommendation</h1>
+                <h1>{{ translations.crop_recommendation[lang] }}</h1>
                 <div class="language-selector">
                     <label for="language-switcher">
                         <i class="fa-solid fa-language"></i>
-                        <span>Language:</span>
+                        <span>{{ translations.language[lang] }}</span>
                     </label>
                     <select id="language-switcher">
-                        <option value="en">English</option>
-                        <option value="hi">Hindi</option>
-                        <option value="te">Telugu</option>
+                        <option value="en" {% if lang == 'en' %}selected{% endif %}>English</option>
+                        <option value="hi" {% if lang == 'hi' %}selected{% endif %}>Hindi</option>
+                        <option value="te" {% if lang == 'te' %}selected{% endif %}>Telugu</option>
                     </select>
                 </div>
             </header>
 
             <div class="form-container">
                 <div class="card">
-                    <h2>Enter Crop Details</h2>
+                    <h2>{{ translations.enter_crop_details[lang] }}</h2>
                     <form id="text-form">
                         <div class="form-grid">
                             <div class="form-group">
-                                <label for="land-area">Land Area (in acres):</label>
+                                <label for="land-area">{{ translations.land_area[lang] }}</label>
                                 <input type="number" id="land-area" required>
                             </div>
                             <div class="form-group">
-                                <label for="prev-crop">Previous Crop:</label>
+                                <label for="prev-crop">{{ translations.previous_crop[lang] }}</label>
                                 <input type="text" id="prev-crop" required>
                             </div>
                             <div class="form-group">
-                                <label for="latitude">Latitude:</label>
-                                <input type="number" step="any" id="latitude" required>
+                                <label for="latitude">{{ translations.latitude[lang] }}</label>
+                                <input type="number" step="any" id="latitude">
                             </div>
                             <div class="form-group">
-                                <label for="longitude">Longitude:</label>
-                                <input type="number" step="any" id="longitude" required>
+                                <label for="longitude">{{ translations.longitude[lang] }}</label>
+                                <input type="number" step="any" id="longitude">
                             </div>
                             <div class="form-group">
-                                <label for="state">State:</label>
-                                <input type="text" id="state" readonly>
+                                <label for="state">{{ translations.state[lang] }}</label>
+                                <input type="text" id="state">
                             </div>
                             <div class="form-group">
-                                <label for="district">District:</label>
-                                <input type="text" id="district" readonly>
+                                <label for="district">{{ translations.district[lang] }}</label>
+                                <input type="text" id="district">
                             </div>
                         </div>
                         <div class="button-group">
                             <button type="button" id="get-location" class="secondary-button"><i
-                                    class="fa-solid fa-location-crosshairs"></i> Use My GPS Location</button>
-                            <button type="submit" class="action-button">Get Recommendation</button>
+                                    class="fa-solid fa-location-crosshairs"></i> {{ translations.use_my_gps[lang] }}</button>
+                            <button type="submit" class="action-button">{{ translations.get_recommendation[lang] }}</button>
                         </div>
                     </form>
                 </div>
                 <div class="card" id="result-container">
-                    <h3>Model Recommendation</h3>
-                    <pre id="json-output">Results will be displayed here...</pre>
+                    <h3>{{ translations.model_recommendation[lang] }}</h3>
+                    <pre id="json-output">{{ translations.results_display[lang] }}</pre>
                 </div>
             </div>
         </main>
@@ -99,6 +97,7 @@
         const stateInput = document.getElementById('state');
         const districtInput = document.getElementById('district');
         const jsonOutput = document.getElementById('json-output');
+        const languageSwitcher = document.getElementById('language-switcher');
 
         // Reverse geocoding
         const fetchAddress = (lat, long) => {
@@ -107,8 +106,8 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.address) {
-                        const state = data.address.state || 'N/A';
-                        const district = data.address.state_district || data.address.county || data.address.city_district || 'N/A';
+                        const state = data.address.state || '';
+                        const district = data.address.state_district || data.address.county || data.address.city_district || '';
                         stateInput.value = state;
                         districtInput.value = district;
                     } else {
@@ -145,18 +144,18 @@
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             const district = districtInput.value;
-            if (!district || district === 'N/A') {
-                jsonOutput.textContent = 'District information is required. Please use the GPS button or enter location manually.';
+            if (!district || district.trim() === '') {
+                jsonOutput.textContent = '{{ translations.district_required_error[lang] }}';
                 jsonOutput.classList.add('error');
                 return;
             }
             jsonOutput.classList.remove('error');
-            jsonOutput.innerHTML = `<div class="loader">Fetching recommendations...</div>`;
+            jsonOutput.innerHTML = `<div class="loader">{{ translations.fetching_recommendations[lang] }}</div>`;
 
             fetch('/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ district: district , crop: document.getElementById('prev-crop').value, area: document.getElementById('land-area').value}),
+                body: JSON.stringify({ district: district, crop: document.getElementById('prev-crop').value, area: document.getElementById('land-area').value }),
             })
                 .then(response => response.json())
                 .then(data => {
@@ -172,6 +171,23 @@
                     jsonOutput.textContent = 'Failed to connect to the server.';
                     jsonOutput.classList.add('error');
                 });
+        });
+
+        // Language switcher event listener
+        languageSwitcher.addEventListener('change', (event) => {
+            const selectedLang = event.target.value;
+            fetch('/change-language', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lang: selectedLang }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload(); // Reload the page to apply the new language
+                }
+            })
+            .catch(error => console.error('Error changing language:', error));
         });
     </script>
 </body>
