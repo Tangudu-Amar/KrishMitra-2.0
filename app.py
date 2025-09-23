@@ -370,10 +370,10 @@ def predict():
 
     Recommend suitable crops from: {', '.join(recommendations)}.
     Provide explanation in structured format:
-    - Recommended Crops
-    - Why these crops
-    - Ideal soil conditions
-    - Crop suggestion based on season
+    - give for first recomendation only.
+    - why that crop.
+    - support the recomendation provided.
+    - dont unnecessarily send input data back in reply.
     Summarize briefly with small points for each heading.
     (give in the form of html to render directly on frontend dont give html in start and end backticks)
     """
