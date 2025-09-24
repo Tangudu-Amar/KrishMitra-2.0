@@ -132,7 +132,22 @@
                         fetchAddress(lat, long);
                     },
                     (error) => {
-                        alert('Could not get your location. Please enter it manually.');
+                        let errorMessage = 'Could not get your location. Please enter it manually.';
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = "User denied the request for Geolocation.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = "Location information is unavailable.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = "The request to get user location timed out.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage = "An unknown error occurred.";
+                                break;
+                        }
+                        alert(errorMessage);
                     }
                 );
             } else {

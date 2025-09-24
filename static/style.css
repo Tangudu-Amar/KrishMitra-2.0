@@ -216,10 +216,12 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
 @media (max-width: 768px) {
     .page-container {
         flex-direction: column;
     }
+
     .sidebar {
         width: 100%;
         flex-direction: row;
@@ -228,10 +230,35 @@ body {
         padding: 16px;
         height: auto;
     }
-    .sidebar-header h2 { font-size: 20px; }
-    .sidebar-menu, .sidebar-bottom { display: none; } /* Basic responsive: hide menu */
-    .main-header { flex-direction: column; gap: 16px; }
+
+    .sidebar-header h2 {
+        font-size: 20px;
+    }
+
+    /* Hide menu items but you could also implement a hamburger menu */
+    .sidebar-menu, .sidebar-bottom {
+        display: none;
+    }
+
+    .main-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .dashboard-grid {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .card {
+        padding: 16px;
+    }
+
+    .crop-stats-container {
+        grid-template-columns: 1fr;
+    }
 }
+
 
 /* ---------------------------------- */
 /* 6. Form Styles                     */
