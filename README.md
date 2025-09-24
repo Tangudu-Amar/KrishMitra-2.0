@@ -1,4 +1,12 @@
 # KrishMitra-2.0
+## Our Team
+
+This project was built by:
+- [Sathwik](https://github.com/Sathwik-0906)
+- [Amar ](https://github.com/tangudu-amar)
+- [Sai Varma](https://github.com/saivarma-2367)
+- [Jaswanth](https://github.com/Jaswanth0128)
+- [Srija](https://github.com/padmasrija)
 
 ## Table of Contents
 
