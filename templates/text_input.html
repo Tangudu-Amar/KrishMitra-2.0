@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="{{ lang }}">
 
 <head>
@@ -203,6 +203,182 @@
                 }
             })
             .catch(error => console.error('Error changing language:', error));
+        });
+    </script>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations.title[lang] }}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="page-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-leaf"></i> <span>{{ translations.title[lang] }}</span></h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}"><i class="fa-solid fa-table-columns"></i>
+                        <span>{{ translations.dashboard[lang] }}</span></a></li>
+                <li><a href="{{ url_for('crop_recommendation_page') }}" class="active"><i
+                            class="fa-solid fa-seedling"></i> <span>{{ translations.crop_recommendation[lang]
+                            }}</span></a>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <header class="main-header">
+                <h1>{{ translations.crop_recommendation[lang] }}</h1>
+                <div class="language-selector">
+                    <label for="language-switcher">
+                        <i class="fa-solid fa-language"></i>
+                        <span>{{ translations.language[lang] }}</span>
+                    </label>
+                    <select id="language-switcher">
+                        <option value="en" {% if lang=='en' %}selected{% endif %}>English</option>
+                        <option value="hi" {% if lang=='hi' %}selected{% endif %}>Hindi</option>
+                        <option value="te" {% if lang=='te' %}selected{% endif %}>Telugu</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="form-container">
+                <div class="card">
+                    <h2>{{ translations.enter_crop_details[lang] }}</h2>
+                    <form id="text-form" action="{{ url_for('predict') }}" method="POST">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="land-area">{{ translations.land_area[lang] }}</label>
+                                <input type="number" id="land-area" name="area" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="prev-crop">{{ translations.previous_crop[lang] }}</label>
+                                <input type="text" id="prev-crop" name="crop" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="latitude">{{ translations.latitude[lang] }}</label>
+                                <input type="number" step="any" id="latitude" name="latitude">
+                            </div>
+                            <div class="form-group">
+                                <label for="longitude">{{ translations.longitude[lang] }}</label>
+                                <input type="number" step="any" id="longitude" name="longitude">
+                            </div>
+                            <div class="form-group">
+                                <label for="state">{{ translations.state[lang] }}</label>
+                                <input type="text" id="state" name="state">
+                            </div>
+                            <div class="form-group">
+                                <label for="district">{{ translations.district[lang] }}</label>
+                                <input type="text" id="district" name="district" required>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button type="button" id="get-location" class="secondary-button"><i
+                                    class="fa-solid fa-location-crosshairs"></i> {{ translations.use_my_gps[lang]
+                                }}</button>
+                            <button type="submit" class="action-button">{{ translations.get_recommendation[lang]
+                                }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const getLocationBtn = document.getElementById('get-location');
+        const latInput = document.getElementById('latitude');
+        const longInput = document.getElementById('longitude');
+        const stateInput = document.getElementById('state');
+        const districtInput = document.getElementById('district');
+        const languageSwitcher = document.getElementById('language-switcher');
+
+        // Reverse geocoding
+        const fetchAddress = (lat, long) => {
+            const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`;
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.address) {
+                        const state = data.address.state || '';
+                        const district = data.address.state_district || data.address.county || data.address.city_district || '';
+                        stateInput.value = state;
+                        districtInput.value = district;
+                    } else {
+                        alert('Could not retrieve address details for this location.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching address:', error);
+                    alert('An error occurred while fetching the address.');
+                });
+        };
+
+        // Get GPS location
+        getLocationBtn.addEventListener('click', () => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const long = position.coords.longitude;
+                        latInput.value = lat.toFixed(6);
+                        longInput.value = long.toFixed(6);
+                        fetchAddress(lat, long);
+                    },
+                    (error) => {
+                        let errorMessage = 'Could not get your location. Please enter it manually.';
+                        switch (error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage = "User denied the request for Geolocation.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage = "Location information is unavailable.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage = "The request to get user location timed out.";
+                                break;
+                            case error.UNKNOWN_ERROR:
+                                errorMessage = "An unknown error occurred.";
+                                break;
+                        }
+                        alert(errorMessage);
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by your browser.');
+            }
+        });
+
+        // Language switcher
+        languageSwitcher.addEventListener('change', (event) => {
+            const selectedLang = event.target.value;
+            fetch('/change-language', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lang: selectedLang }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.reload();
+                    }
+                })
+                .catch(error => console.error('Error changing language:', error));
         });
     </script>
 </body>

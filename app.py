@@ -141,10 +141,10 @@ def crop_recommendation_page():
 
 @app.route("/change-language", methods=["POST"])
 def change_language():
-    data = request.get_json()
-    lang = data.get("lang", "en")
+    lang = request.form.get("lang", "en")
     session['lang'] = lang
-    return jsonify({"status": "success", "lang": lang})
+    return redirect(request.referrer or url_for('home'))
+
 
 @app.route("/crop-prediction")
 def crop_prediction_page():
@@ -158,18 +158,125 @@ def crop_prediction_page():
         return redirect(url_for('crop_recommendation_page'))
     return render_template("result.html", gemini_report=gemini_report, crops=crops, lang=lang, translations=TRANSLATIONS)
 
+# @app.route("/predict", methods=["POST"])
+# def predict():
+#     data = request.get_json()
+#     if not data or "district" not in data:
+#         return jsonify({"error": "District not provided"}), 400
+
+#     district = data["district"].strip().lower()
+#     prev_crop = data.get("crop", "").strip().lower()
+#     area = data.get("area", "").strip().lower()
+#     lang = session.get('lang', 'en')
+
+#     # --- 1. Soil Data ---
+#     try:
+#         district_data = df[df['District Name'].str.lower() == district]
+#         if district_data.empty:
+#             return jsonify({"error": f"Data for '{district.title()}' not available."}), 404
+#         soil = district_data.iloc[0]
+#         n, p, k, ph = soil['N'], soil['P'], soil['K'], soil['pH']
+#     except KeyError:
+#         return jsonify({"error": "Server error: Soil data format incorrect."}), 500
+
+#     # --- 2. Weather Forecast (10-day avg) ---
+#     forecast_data = get_forecast(district, days=10)
+#     if not forecast_data["success"]:
+#         return jsonify({"error": "Could not retrieve weather forecast."}), 500
+
+#     forecast = forecast_data["forecast"]
+#     avg_temperature = sum(d["temperature"] for d in forecast if d.get("temperature")) / len(forecast)
+#     avg_humidity = sum(d["humidity"] for d in forecast if d.get("humidity")) / len(forecast)
+#     avg_rainfall = sum(d["rainfall"] for d in forecast if d.get("rainfall")) / len(forecast)
+
+#     # --- 3. Predict Crops ---
+#     input_features = pd.DataFrame(
+#         [[n, p, k, avg_temperature, avg_humidity, ph, avg_rainfall]],
+#         columns=['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
+#     )
+#     probabilities = model.predict_proba(input_features)[0]
+#     top_indices = np.argsort(probabilities)[-3:][::-1]
+#     recommendations = [CROP_LABELS[i] for i in top_indices]
+
+#     # --- 4. Gemini Report ---
+#     prompt = f"""
+#     You are an expert AI agronomist named KrishiMitra. Your task is to provide a detailed, well-structured crop recommendation in HTML format based on the data provided below. Your response must be only the HTML code, ready to be rendered directly on a webpage. Do not include <html> or <body> tags.
+
+#     ## Farm & Environmental Data:
+#     - Soil Nutrients: Nitrogen (N): {n} ppm, Phosphorus (P): {p} ppm, Potassium (K): {k} ppm
+#     - Soil pH: {ph}
+#     - 10-Day Weather Forecast:
+#       - Average Temperature: {avg_temperature:.2f} °C
+#       - Average Humidity: {avg_humidity:.2f}%
+#       - Total Rainfall: {avg_rainfall:.2f} mm
+#     - Farm Details:
+#       - Previous Crop Harvested: {prev_crop if prev_crop else 'N/A'}
+#       - Land Area: {area if area else 'N/A'} acres
+#     - Pre-selected Viable Crops (from analysis): {', '.join(recommendations)}
+
+#     ## Instructions:
+#     From the list of pre-selected crops, choose the single best crop as the primary recommendation. Provide a detailed justification, research basis, and suggest 2-3 other feasible alternatives from the list. Format your entire response using the HTML structure provided below. Do not add any text outside of the main <div class="report-container"> wrapper. Respond entirely in the language corresponding to the language code: {lang}.
+
+#     HTML STRUCTURE:
+#     <div class="report-container" style="font-family: Arial, sans-serif; color: #333;">
+#         <div class="card primary-recommendation" style="background-color: #e8f5e9; border-left: 5px solid #4CAF50; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+#             <h2 style="margin-top: 0;">Primary Recommendation: [Name of the Best Crop]</h2>
+#             <p>Based on a comprehensive analysis of your soil and local weather, <strong>[Crop Name]</strong> is the most profitable and suitable crop for the upcoming season.</p>
+#         </div>
+#         <div class="card details" style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+#             <h3>Detailed Analysis</h3><hr>
+#             <h4>Justification for Recommendation</h4>
+#             <ul>
+#                 <li><strong>Soil Compatibility:</strong> Your soil's NPK values and pH are within the ideal range required for robust growth of [Crop Name].</li>
+#                 <li><strong>Climate Suitability:</strong> The current weather forecast aligns perfectly with the critical germination and growing phases for this crop.</li>
+#                 <li><strong>Crop Rotation Benefit:</strong> Following a previous crop of [{prev_crop if prev_crop else 'N/A'}], planting [Crop Name] can help improve soil health by [mention a specific benefit, e.g., breaking pest cycles, restoring nitrogen, etc.].</li>
+#             </ul>
+#             <h4>Research Basis</h4>
+#             <ul>
+#                 <li>Agricultural studies for your geo-climatic zone show that [Crop Name] has a high yield potential under these specific soil and weather parameters.</li>
+#                 <li>This crop is recommended for this season due to its [mention a key trait, e.g., drought tolerance, water-use efficiency, etc.], which is supported by regional agricultural university research.</li>
+#             </ul>
+#         </div>
+#         <div class="card alternatives" style="background-color: #e3f2fd; padding: 15px; border-radius: 5px;">
+#             <h3>Feasible Alternative Crops</h3><hr>
+#             <p><strong>1. [Alternative Crop 1 Name]:</strong> A strong secondary option. It thrives in similar conditions but may have a different market value or water requirement.</p>
+#             <p><strong>2. [Alternative Crop 2 Name]:</strong> Consider this crop if you are looking for a shorter harvest cycle or better resistance to local pests.</p>
+#         </div>
+#     </div>
+#     """
+
+#     try:
+#         response = gemini_model.generate_content(prompt)
+#         gemini_report = response.text
+#     except Exception as e:
+#         print(f"Gemini API call failed: {e}")
+#         gemini_report = f"<p>Error generating report: {e}</p>"
+
+#     # --- 5. Save and Return ---
+#     session["crops"] = recommendations
+#     session["gemini_report"] = gemini_report
+
+#     return jsonify({
+#         "status": "success",
+#         "redirect_url": url_for('crop_prediction_page')
+#     })
+
 @app.route("/predict", methods=["POST"])
 def predict():
-    data = request.get_json()
+    lang = session.get('lang', 'en')
+    data = request.form
     if not data or "district" not in data:
-        return jsonify({"error": "District not provided"}), 400
+        return "District not provided", 400
 
-    district = data["district"].strip().lower()
+    district = data.get("district", "").strip().lower()
     prev_crop = data.get("crop", "").strip().lower()
     area = data.get("area", "").strip().lower()
-    lang = session.get('lang', 'en')
 
-    # --- 1. Soil Data ---
+
+    if not district:
+        return jsonify({"error": "District not provided"}), 400
+
+    # --- Soil Data ---
     try:
         district_data = df[df['District Name'].str.lower() == district]
         if district_data.empty:
@@ -179,7 +286,7 @@ def predict():
     except KeyError:
         return jsonify({"error": "Server error: Soil data format incorrect."}), 500
 
-    # --- 2. Weather Forecast (10-day avg) ---
+    # --- Weather Forecast ---
     forecast_data = get_forecast(district, days=10)
     if not forecast_data["success"]:
         return jsonify({"error": "Could not retrieve weather forecast."}), 500
@@ -189,62 +296,78 @@ def predict():
     avg_humidity = sum(d["humidity"] for d in forecast if d.get("humidity")) / len(forecast)
     avg_rainfall = sum(d["rainfall"] for d in forecast if d.get("rainfall")) / len(forecast)
 
-    # --- 3. Predict Crops ---
-    input_features = pd.DataFrame(
-        [[n, p, k, avg_temperature, avg_humidity, ph, avg_rainfall]],
-        columns=['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
-    )
-    probabilities = model.predict_proba(input_features)[0]
-    top_indices = np.argsort(probabilities)[-3:][::-1]
-    recommendations = [CROP_LABELS[i] for i in top_indices]
+    # --- Crop Prediction ---
+    user_data = pd.DataFrame(
+            [[n, p, k, avg_temperature, avg_humidity, ph, avg_rainfall]],
+            columns=['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
+            )
 
-    # --- 4. Gemini Report ---
+    # --- Predict probabilities ---
+    probabilities_stacked = model.predict_proba(user_data)  # list of arrays
+    probabilities = np.array(probabilities_stacked).T  # shape: (n_samples, n_labels)
+
+    # --- Crop labels from y_train ---
+    crop_labels = CROP_LABELS  # ensure this matches training labels
+
+    # --- Apply threshold ---
+    threshold = 0.5
+    recommended_crops_indices = np.where(probabilities[0] > threshold)[0]
+
+    if len(recommended_crops_indices) > 0:
+        recommendations = [crop_labels[i] for i in recommended_crops_indices]
+    else:
+        # fallback to crop with highest probability
+        highest_prob_index = np.argmax(probabilities[0])
+        recommendations = [crop_labels[highest_prob_index]]
+
+    # --- Gemini report generation remains unchanged ---
+
+    print(",".join(recommendations))
     prompt = f"""
-    You are an expert AI agronomist named KrishiMitra. Your task is to provide a detailed, well-structured crop recommendation in HTML format based on the data provided below. Your response must be only the HTML code, ready to be rendered directly on a webpage. Do not include <html> or <body> tags.
+        You are an expert AI agronomist named KrishiMitra. Your task is to provide a detailed, well-structured crop recommendation in HTML format based on the data provided below. Your response must be only the HTML code, ready to be rendered directly on a webpage. Do not include <html> or <body> tags.
 
-    ## Farm & Environmental Data:
-    - Soil Nutrients: Nitrogen (N): {n} ppm, Phosphorus (P): {p} ppm, Potassium (K): {k} ppm
-    - Soil pH: {ph}
-    - 10-Day Weather Forecast:
-      - Average Temperature: {avg_temperature:.2f} °C
-      - Average Humidity: {avg_humidity:.2f}%
-      - Total Rainfall: {avg_rainfall:.2f} mm
-    - Farm Details:
-      - Previous Crop Harvested: {prev_crop if prev_crop else 'N/A'}
-      - Land Area: {area if area else 'N/A'} acres
-    - Pre-selected Viable Crops (from analysis): {', '.join(recommendations)}
+        ## Farm & Environmental Data:
+        - Soil Nutrients: Nitrogen (N): {n} ppm, Phosphorus (P): {p} ppm, Potassium (K): {k} ppm
+        - Soil pH: {ph}
+        - 10-Day Weather Forecast:
+        - Average Temperature: {avg_temperature:.2f} °C
+        - Average Humidity: {avg_humidity:.2f}%
+        - Total Rainfall: {avg_rainfall:.2f} mm
+        - Farm Details:
+        - Previous Crop Harvested: {prev_crop if prev_crop else 'N/A'}
+        - Land Area: {area if area else 'N/A'} acres
+        - Pre-selected Viable Crops (from analysis): {', '.join(recommendations)}
 
-    ## Instructions:
-    From the list of pre-selected crops, choose the single best crop as the primary recommendation. Provide a detailed justification, research basis, and suggest 2-3 other feasible alternatives from the list. Format your entire response using the HTML structure provided below. Do not add any text outside of the main <div class="report-container"> wrapper. Respond entirely in the language corresponding to the language code: {lang}.
+        ## Instructions:
+        From the list of pre-selected crops, choose the single best crop as the primary recommendation. Provide a detailed justification, research basis, and suggest 2-3 other feasible alternatives from the list. Format your entire response using the HTML structure provided below. Do not add any text outside of the main <div class="report-container"> wrapper. Respond entirely in the language corresponding to the language code: {lang}.
 
-    HTML STRUCTURE:
-    <div class="report-container" style="font-family: Arial, sans-serif; color: #333;">
-        <div class="card primary-recommendation" style="background-color: #e8f5e9; border-left: 5px solid #4CAF50; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-            <h2 style="margin-top: 0;">Primary Recommendation: [Name of the Best Crop]</h2>
-            <p>Based on a comprehensive analysis of your soil and local weather, <strong>[Crop Name]</strong> is the most profitable and suitable crop for the upcoming season.</p>
+        HTML STRUCTURE:
+        <div class="report-container" style="font-family: Arial, sans-serif; color: #333;">
+            <div class="card primary-recommendation" style="background-color: #e8f5e9; border-left: 5px solid #4CAF50; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <h2 style="margin-top: 0;">Primary Recommendation: [Name of the Best Crop]</h2>
+                <p>Based on a comprehensive analysis of your soil and local weather, <strong>[Crop Name]</strong> is the most profitable and suitable crop for the upcoming season.</p>
+            </div>
+            <div class="card details" style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <h3>Detailed Analysis</h3><hr>
+                <h4>Justification for Recommendation</h4>
+                <ul>
+                    <li><strong>Soil Compatibility:</strong> Your soil's NPK values and pH are within the ideal range required for robust growth of [Crop Name].</li>
+                    <li><strong>Climate Suitability:</strong> The current weather forecast aligns perfectly with the critical germination and growing phases for this crop.</li>
+                    <li><strong>Crop Rotation Benefit:</strong> Following a previous crop of [{prev_crop if prev_crop else 'N/A'}], planting [Crop Name] can help improve soil health by [mention a specific benefit, e.g., breaking pest cycles, restoring nitrogen, etc.].</li>
+                </ul>
+                <h4>Research Basis</h4>
+                <ul>
+                    <li>Agricultural studies for your geo-climatic zone show that [Crop Name] has a high yield potential under these specific soil and weather parameters.</li>
+                    <li>This crop is recommended for this season due to its [mention a key trait, e.g., drought tolerance, water-use efficiency, etc.], which is supported by regional agricultural university research.</li>
+                </ul>
+            </div>
+            <div class="card alternatives" style="background-color: #e3f2fd; padding: 15px; border-radius: 5px;">
+                <h3>Feasible Alternative Crops</h3><hr>
+                <p><strong>1. [Alternative Crop 1 Name]:</strong> A strong secondary option. It thrives in similar conditions but may have a different market value or water requirement.</p>
+                <p><strong>2. [Alternative Crop 2 Name]:</strong> Consider this crop if you are looking for a shorter harvest cycle or better resistance to local pests.</p>
+            </div>
         </div>
-        <div class="card details" style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
-            <h3>Detailed Analysis</h3><hr>
-            <h4>Justification for Recommendation</h4>
-            <ul>
-                <li><strong>Soil Compatibility:</strong> Your soil's NPK values and pH are within the ideal range required for robust growth of [Crop Name].</li>
-                <li><strong>Climate Suitability:</strong> The current weather forecast aligns perfectly with the critical germination and growing phases for this crop.</li>
-                <li><strong>Crop Rotation Benefit:</strong> Following a previous crop of [{prev_crop if prev_crop else 'N/A'}], planting [Crop Name] can help improve soil health by [mention a specific benefit, e.g., breaking pest cycles, restoring nitrogen, etc.].</li>
-            </ul>
-            <h4>Research Basis</h4>
-            <ul>
-                <li>Agricultural studies for your geo-climatic zone show that [Crop Name] has a high yield potential under these specific soil and weather parameters.</li>
-                <li>This crop is recommended for this season due to its [mention a key trait, e.g., drought tolerance, water-use efficiency, etc.], which is supported by regional agricultural university research.</li>
-            </ul>
-        </div>
-        <div class="card alternatives" style="background-color: #e3f2fd; padding: 15px; border-radius: 5px;">
-            <h3>Feasible Alternative Crops</h3><hr>
-            <p><strong>1. [Alternative Crop 1 Name]:</strong> A strong secondary option. It thrives in similar conditions but may have a different market value or water requirement.</p>
-            <p><strong>2. [Alternative Crop 2 Name]:</strong> Consider this crop if you are looking for a shorter harvest cycle or better resistance to local pests.</p>
-        </div>
-    </div>
-    """
-
+        """
     try:
         response = gemini_model.generate_content(prompt)
         gemini_report = response.text
@@ -252,14 +375,16 @@ def predict():
         print(f"Gemini API call failed: {e}")
         gemini_report = f"<p>Error generating report: {e}</p>"
 
-    # --- 5. Save and Return ---
     session["crops"] = recommendations
     session["gemini_report"] = gemini_report
 
-    return jsonify({
-        "status": "success",
-        "redirect_url": url_for('crop_prediction_page')
-    })
+    # If form submission, redirect to results page
+    if not request.is_json:
+        return redirect(url_for('crop_prediction_page'))
+
+    # If JSON request, return JSON response
+    return redirect(url_for('crop_prediction_page'))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

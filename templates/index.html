@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="{{ lang }}">
 
 <head>
@@ -117,7 +117,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const languageSwitcher = document.getElementById('language-switcher');
-            
+
             languageSwitcher.addEventListener('change', (event) => {
                 const selectedLang = event.target.value;
                 fetch('/change-language', {
@@ -135,6 +135,130 @@
             });
         });
     </script>
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ translations.title[lang] }} Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="page-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-leaf"></i> <span>{{ translations.title[lang] }}</span></h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('home') }}" class="active"><i class="fa-solid fa-table-columns"></i> <span>{{
+                            translations.dashboard[lang] }}</span></a></li>
+                <li><a href="{{ url_for('crop_recommendation_page') }}"><i class="fa-solid fa-seedling"></i> <span>{{
+                            translations.crop_recommendation[lang] }}</span></a></li>
+            </ul>
+        </nav>
+
+        <main class="content">
+            <header class="main-header">
+                <h1>{{ translations.dashboard[lang] }}</h1>
+                <div class="language-selector">
+                    <form action="{{ url_for('change_language') }}" method="POST">
+                        <label for="language-switcher">
+                            <i class="fa-solid fa-language"></i>
+                            <span>{{ translations.language[lang] }}</span>
+                        </label>
+                        <select id="language-switcher" name="lang" onchange="this.form.submit()">
+                            <option value="en" {% if lang=='en' %}selected{% endif %}>English</option>
+                            <option value="hi" {% if lang=='hi' %}selected{% endif %}>Hindi</option>
+                            <option value="te" {% if lang=='te' %}selected{% endif %}>Telugu</option>
+                        </select>
+                    </form>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <div class="card recommendation-card">
+                    <div class="crop-illustration">
+                        <img src="https://cdn.pixabay.com/photo/2020/04/24/09/47/paddy-fields-5086153_1280.jpg"
+                            alt="Paddy field" width="50%" height="auto">
+                    </div>
+                    <h2>{{ translations.paddy_rice[lang] }}</h2>
+                    <p class="crop-subtext">{{ translations.paddy_rice_subtext[lang] }}</p>
+
+                    <div class="crop-stats-container">
+                        <div class="stat-box">
+                            <span>{{ translations.sowing_season[lang] }}</span>
+                            <strong>{{ translations.kharif[lang] }}</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>{{ translations.growth_duration[lang] }}</span>
+                            <strong>{{ translations['120_days'][lang] }}</strong>
+                        </div>
+                        <div class="stat-box">
+                            <span>{{ translations.expected_yield[lang] }}</span>
+                            <strong>{{ translations['yield_value'][lang] }}</strong>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('crop_recommendation_page') }}" class="action-button">{{
+                        translations.new_recommendation[lang] }}</a>
+                </div>
+
+                <div class="card market-prices-card">
+                    <h3><i class="fa-solid fa-store"></i> <span>{{ translations.market_prices[lang] }}</span></h3>
+                    <ul class="market-list">
+                        <li>
+                            <span class="crop-icon tomato">🍅</span>
+                            <span class="crop-name">{{ translations.tomato[lang] }}</span>
+                            <span class="price">₹25/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 2.5%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon onion">🧅</span>
+                            <span class="crop-name">{{ translations.onion[lang] }}</span>
+                            <span class="price">₹30/kg</span>
+                            <span class="trend down"><i class="fa-solid fa-arrow-down"></i> 1.8%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon potato">🥔</span>
+                            <span class="crop-name">{{ translations.potato[lang] }}</span>
+                            <span class="price">₹22/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 5.2%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon cotton">🌱</span>
+                            <span class="crop-name">{{ translations.cotton[lang] }}</span>
+                            <span class="price">₹72/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 1.5%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon maize">🌽</span>
+                            <span class="crop-name">{{ translations.maize[lang] }}</span>
+                            <span class="price">₹21/kg</span>
+                            <span class="trend down"><i class="fa-solid fa-arrow-down"></i> 0.5%</span>
+                        </li>
+                        <li>
+                            <span class="crop-icon wheat">🌾</span>
+                            <span class="crop-name">{{ translations.wheat[lang] }}</span>
+                            <span class="price">₹28/kg</span>
+                            <span class="trend up"><i class="fa-solid fa-arrow-up"></i> 3.1%</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
 
 </html>
